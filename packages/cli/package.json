@@ -23,7 +23,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/copy-skills.mjs",
     "build:sea": "tsup --config tsup.sea.config.ts",
     "postinstall": "node postinstall.mjs",
     "prepack": "cp ../../README.md ../../LICENSE .",

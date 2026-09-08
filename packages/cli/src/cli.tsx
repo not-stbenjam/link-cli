@@ -14,6 +14,7 @@ import { createSpendRequestCli } from './commands/spend-request';
 import { createTransactionsCli } from './commands/transactions';
 import { createUserInfoCli } from './commands/user-info';
 import { createWebBotAuthCli } from './commands/web-bot-auth';
+import { isSkillsAddInvocation, syncAuthoredSkills } from './skills-sync';
 import { ResourceFactory } from './utils/resource-factory';
 import {
   createAgentUpdateInfoProvider,
@@ -26,6 +27,9 @@ declare const __CLI_NAME__: string;
 
 const cliVersion = __CLI_VERSION__;
 const cliName = __CLI_NAME__;
+const cliDescription =
+  'Create a secure, one-time payment credential from a Link wallet to let agents complete purchases on behalf of users.';
+const skillsRoot = import.meta.dirname;
 const defaultHeaders = {
   'User-Agent': `link-cli/${cliVersion}`,
 };
@@ -64,10 +68,10 @@ const authRepo = factory.createAuthResource();
 const spendRequestRepo = factory.createSpendRequestResource();
 
 const cli = Cli.create('link-cli', {
-  description:
-    'Create a secure, one-time payment credential from a Link wallet to let agents complete purchases on behalf of users.',
+  description: cliDescription,
   version: cliVersion,
   sync: {
+    cwd: skillsRoot,
     include: ['skills/*'],
   },
 });
@@ -172,6 +176,16 @@ cli.command(
 );
 cli.command(createServeCli(cli));
 
-cli.serve();
+const argv = process.argv.slice(2);
+if (isSkillsAddInvocation(argv)) {
+  await syncAuthoredSkills({
+    argv: argv.slice(2),
+    cli,
+    cwd: skillsRoot,
+    description: cliDescription,
+  });
+} else {
+  await cli.serve();
+}
 
 export default cli;
